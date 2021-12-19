@@ -278,10 +278,10 @@ while True:
                 if areas[i] == max_area:
                     detected_object_list[i].append(1)
                     #save the coordinates of the largest object
-                    largest_ymin = detected_object_list[i][2] - 10 # adding some buffer
-                    largest_xmin = detected_object_list[i][3] - 10
-                    largest_ymax = detected_object_list[i][4] + 10
-                    largest_xmax = detected_object_list[i][5] + 10
+                    largest_ymin = detected_object_list[i][2] # - 10 # expanding crop boundaries to get a better image
+                    largest_xmin = detected_object_list[i][3] # - 10 # doing this can cause the program to crash if
+                    largest_ymax = detected_object_list[i][4] # + 10 # the new boundaries go beyond the limit of the image
+                    largest_xmax = detected_object_list[i][5] # + 10 # this may be unnecessary anyways 
                     
                     # save cropped image
                     cropped_image = frame1[largest_ymin:largest_ymax, largest_xmin:largest_xmax]
