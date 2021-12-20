@@ -12,10 +12,14 @@
   * launch_commands (these are the commands you will run in the terminal to launch the program)
 
 ### Install Packages
+All of these packages must be installed in the virtual environment, tflite1-env. To activate the virtual environment, run these lines in the terminal:
+* cd tflite1
+* source tflite1-env/bin/activate
+
 Run the following command lines in the terminal of the Raspberry Pi to install the necessary packages. Some of these might need to be adapted for Linux. If you get any errors, try googling the proper way to install the package on Linux.
 * pip install kornia
-* apt install tesseract-ocr
-* apt install libtesseract-dev
+* sudo apt install tesseract-ocr -y
+* sudo apt install libtesseract-dev -y
 * pip install pytesseract
 
 ### Deploying the model
