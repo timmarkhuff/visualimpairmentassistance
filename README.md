@@ -18,10 +18,14 @@ All of these packages must be installed in the virtual environment, tflite1-env.
 * source tflite1-env/bin/activate
 
 Run the following command lines in the terminal of the Raspberry Pi to install the necessary packages. Some of these might need to be adapted for Linux. If you get any errors, try googling the proper way to install the package on Linux.
-* pip install kornia
+* sudo apt update
+* pip install pytesseract
 * sudo apt install tesseract-ocr -y
 * sudo apt install libtesseract-dev -y
-* pip install pytesseract
+* pip install pyttsx3
+* pip install wheel
+* sudo apt-get update && sudo apt-get install espeak
+* pip install kornia
 
 ### Deploying the model
 * Go to the models folder and copy the model you wish to use. We will probably start with actual_safeway_signs_v2_tradeoff.tflite. We can experiment with the others if we find this one doesn't work well.
