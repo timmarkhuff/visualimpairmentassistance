@@ -25,7 +25,6 @@ Run the following command lines in the terminal of the Raspberry Pi to install t
 * pip install pyttsx3
 * pip install wheel
 * sudo apt-get update && sudo apt-get install espeak
-* pip install kornia
 
 ### Deploying the model
 * Go to the models folder and copy the model you wish to use. We will probably start with actual_safeway_signs_v2_tradeoff.tflite. We can experiment with the others if we find this one doesn't work well.
