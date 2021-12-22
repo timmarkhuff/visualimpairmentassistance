@@ -287,15 +287,21 @@ while True:
                     largest_ymax = detected_object_list[i][4] # + 10 # the new boundaries go beyond the limit of the image
                     largest_xmax = detected_object_list[i][5] # + 10 # this may be unnecessary anyways 
                     
-                    # save cropped image
+                    # get cropped image
                     cropped_image = frame1[largest_ymin:largest_ymax, largest_xmin:largest_xmax]
-                    cv2.imwrite(f'screenshots/{timestampStr}_cropped.png', cropped_image)
+
+#                     # save cropped image
+#                     cv2.imwrite(f'screenshots/{timestampStr}_cropped.png', cropped_image)
                     
                     # dewarp
-                    dewarped = ocr.tims_dewarp(cropped_image)
+                    dewarped, dewarp_process = ocr.process_and_unwarp(cropped_image, test_mode=1)
                     
-                    # save dewarped image
-                    cv2.imwrite(f'screenshots/{timestampStr}_dewarped.png', dewarped)
+#                     # save dewarped image
+#                     cv2.imwrite(f'screenshots/{timestampStr}_dewarped.png', dewarped)
+                    
+                    # save dewarp process image
+                    cv2.imwrite(f'screenshots/{timestampStr}_dewarp_process.png', dewarp_process)
+                    
                     
                     # OCR GOES HERE
                     mask, txt = ocr.ocr_darius(dewarped)
