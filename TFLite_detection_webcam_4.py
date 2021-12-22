@@ -172,8 +172,7 @@ freq = cv2.getTickFrequency()
 videostream = VideoStream(resolution=(imW,imH),framerate=30).start()
 time.sleep(1)
 
-# write opening message to txt file
-# write_to_text('STARTING THE APP.')
+txt = ""
 
 #for frame1 in camera.capture_continuous(rawCapture, format="bgr",use_video_port=True):
 while True:
@@ -207,7 +206,7 @@ while True:
     detected_object_list = []
     # Loop over all detections and draw detection box if confidence is above minimum threshold
     for i in range(len(scores)):
-        if ((scores[i] > min_conf_threshold) and (scores[i] <= 1.0)): # and labels[int(classes[i])] == 'cup': # add this to filter by class
+        if ((scores[i] > min_conf_threshold) and (scores[i] <= 1.0)): 
 
             # Get bounding box coordinates and draw box
             # Interpreter can return coordinates that are outside of image dimensions, need to force them to be within image using max() and min()
@@ -235,9 +234,15 @@ while True:
             detected_object = [object_name, ymin, xmin, ymax, xmax, objwidth, objheight, objarea]
             detected_object_list.append(detected_object)
             
-            
     # Draw framerate in corner of frame
     cv2.putText(frame,'FPS: {0:.2f}'.format(frame_rate_calc),(30,50),cv2.FONT_HERSHEY_SIMPLEX,1,(255,255,0),2,cv2.LINE_AA)
+    
+    frame_to_save = frame.copy()
+    
+    # draw detected text
+    if len(txt) < 3:
+        txt = "(No text detected. Press 'd' to detect text.)"
+    cv2.putText(frame, f'{txt}',(30,100),cv2.FONT_HERSHEY_SIMPLEX,1,(255,255,0),2,cv2.LINE_AA)
 
     # All the results have been drawn on the frame, so it's time to display it.
     cv2.imshow('Object detector', frame)
@@ -252,15 +257,14 @@ while True:
     pressed_key = cv2.waitKey(1)
     
     # DETECT BIGGEST OBJECT
-    if pressed_key == ord('d'):
-        # write_to_text('Button pressed----------')
+    if pressed_key == ord('d') or pressed_key == ord('D'):
             
         # capture time and date stamp
         dateTimeObj = datetime.now()
         timestampStr = dateTimeObj.strftime("%Y.%m.%d.%H:%M.%S.%f")
         
-        # take a screenshot
-        cv2.imwrite(f'screenshots/{timestampStr}_whole.png', frame) 
+#         # take a screenshot
+#         cv2.imwrite(f'screenshots/{timestampStr}_whole.png', frame) 
                  
         areas = []
         
@@ -287,8 +291,14 @@ while True:
                     cropped_image = frame1[largest_ymin:largest_ymax, largest_xmin:largest_xmax]
                     cv2.imwrite(f'screenshots/{timestampStr}_cropped.png', cropped_image)
                     
+                    # dewarp
+                    dewarped = ocr.tims_dewarp(cropped_image)
+                    
+                    # save dewarped image
+                    cv2.imwrite(f'screenshots/{timestampStr}_dewarped.png', dewarped)
+                    
                     # OCR GOES HERE
-                    mask, txt = ocr.ocr(cropped_image)
+                    mask, txt = ocr.ocr_darius(dewarped)
                     
                     # TEXT TO SPEECH WITH PYTTSX3
                     pyttsx3_functions.text_to_speech(timestampStr, txt)
@@ -303,6 +313,18 @@ while True:
                     # if the object is not the largest in the frame, append 0 and N/A
                     detected_object_list[i].append(0) # 0 = not the largest object
                     detected_object_list[i].append('N/A') # N/A = no text to save
+                
+                ####TRYING SOMETHING NEW####
+                
+                # draw detected text
+                if len(txt) < 3:
+                    txt = "(No text detected. Press 'd' to detect text.)"
+                cv2.putText(frame_to_save, f'{txt}',(30,100),cv2.FONT_HERSHEY_SIMPLEX,1,(255,255,0),2,cv2.LINE_AA)
+                
+                # take a screenshot
+                cv2.imwrite(f'screenshots/{timestampStr}_whole.png', frame_to_save) 
+                
+                #############################
                     
                 
                 # convert list of object details to comma-separated string of object details
@@ -315,9 +337,8 @@ while True:
                 write_to_text(obj_as_string)
    
             
-    if pressed_key == ord('q'):
+    if pressed_key == ord('q') or pressed_key == ord('Q'):
         print("quitting")
-        # write_to_text('QUITTING THE APP.')
             
         # Clean up
         cv2.destroyAllWindows()
