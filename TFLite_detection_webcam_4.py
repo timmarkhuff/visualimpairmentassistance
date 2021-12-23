@@ -245,7 +245,7 @@ while True:
     cv2.putText(frame, f'{txt}',(30,100),cv2.FONT_HERSHEY_SIMPLEX,1,(255,255,0),2,cv2.LINE_AA)
 
     # All the results have been drawn on the frame, so it's time to display it.
-    cv2.imshow('Object detector', frame)
+    cv2.imshow('Visual Impairment Assistance', frame)
 
     # Calculate framerate
     t2 = cv2.getTickCount()
@@ -256,16 +256,13 @@ while True:
     # check if key is pressed
     pressed_key = cv2.waitKey(1)
     
-    # DETECT BIGGEST OBJECT
+    # DETECT LARGEST OBJECT
     if pressed_key == ord('d') or pressed_key == ord('D'):
             
         # capture time and date stamp
         dateTimeObj = datetime.now()
         timestampStr = dateTimeObj.strftime("%Y.%m.%d.%H:%M.%S.%f")
-        
-#         # take a screenshot
-#         cv2.imwrite(f'screenshots/{timestampStr}_whole.png', frame) 
-                 
+                         
         areas = []
         
         # make a list of the areas of all detected objects
@@ -278,47 +275,41 @@ while True:
                         
             # label each object as largest(1) or not largest(0)
             for i in range(len(detected_object_list)):
-                detected_object_list[i].insert(0, timestampStr)
+#                 detected_object_list[i].insert(0, timestampStr) # can probably remove this
                 if areas[i] == max_area:
-                    detected_object_list[i].append(1)
+#                     detected_object_list[i].append(1) # can probably remove this
                     #save the coordinates of the largest object
-                    largest_ymin = detected_object_list[i][2] # - 10 # expanding crop boundaries to get a better image
-                    largest_xmin = detected_object_list[i][3] # - 10 # doing this can cause the program to crash if
-                    largest_ymax = detected_object_list[i][4] # + 10 # the new boundaries go beyond the limit of the image
-                    largest_xmax = detected_object_list[i][5] # + 10 # this may be unnecessary anyways 
+                    largest_ymin = detected_object_list[i][1] # 
+                    largest_xmin = detected_object_list[i][2] #  
+                    largest_ymax = detected_object_list[i][3] # 
+                    largest_xmax = detected_object_list[i][4] # 
                     
                     # get cropped image
                     cropped_image = frame1[largest_ymin:largest_ymax, largest_xmin:largest_xmax]
-
-#                     # save cropped image
-#                     cv2.imwrite(f'screenshots/{timestampStr}_cropped.png', cropped_image)
                     
                     # dewarp
                     dewarped, dewarp_process = ocr.process_and_unwarp(cropped_image, test_mode=1)
                     
-#                     # save dewarped image
-#                     cv2.imwrite(f'screenshots/{timestampStr}_dewarped.png', dewarped)
-                    
-                    # save dewarp process image
-                    cv2.imwrite(f'screenshots/{timestampStr}_dewarp_process.png', dewarp_process)
-                    
-                    
-                    # OCR GOES HERE
+                    # OCR 
                     mask, txt = ocr.ocr_darius(dewarped)
                     
-                    # TEXT TO SPEECH WITH PYTTSX3
+                    # Text to speech with PYTTSX3
                     pyttsx3_functions.text_to_speech(timestampStr, txt)
+                             
+                    # SAVE IMAGES
+                    # save dewarp process image
+                    cv2.imwrite(f'screenshots/{timestampStr}_dewarp_process.png', dewarp_process)
 
                     # save mask
                     cv2.imwrite(f'screenshots/{timestampStr}_mask.png', mask)
 
-                    # add detected text to object list
-                    detected_object_list[i].append(txt)
+#                     # add detected text to object list
+#                     detected_object_list[i].append(txt)
                 
-                else:
-                    # if the object is not the largest in the frame, append 0 and N/A
-                    detected_object_list[i].append(0) # 0 = not the largest object
-                    detected_object_list[i].append('N/A') # N/A = no text to save
+#                 else:
+#                     # if the object is not the largest in the frame, append 0 and N/A
+#                     detected_object_list[i].append(0) # 0 = not the largest object
+#                     detected_object_list[i].append('N/A') # N/A = no text to save
                 
                 ####TRYING SOMETHING NEW####
                 
@@ -339,9 +330,16 @@ while True:
                 for i in curr_obj:
                     obj_as_string =  obj_as_string + str(i) + ','
                     
-                # write detected object to txt file
-                write_to_text(obj_as_string)
-   
+#                 # write detected object to txt file
+#                 write_to_text(obj_as_string)
+        
+        # write the results to log.txt
+        if len(detected_object_list) > 0:
+            write_to_text(f"{timestampStr},{txt}")
+        else:
+            write_to_text(f"{timestampStr},No object detected")
+            
+    
             
     if pressed_key == ord('q') or pressed_key == ord('Q'):
         print("quitting")

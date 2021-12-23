@@ -315,8 +315,6 @@ def fig2img(fig):
   return image_from_plot
 
 
-
-
 def ocr_darius(img):
 
   img = cv2.resize(img, (0, 0), fx=3, fy=3)
@@ -325,6 +323,8 @@ def ocr_darius(img):
   mask = erosion
 
   # OCR
+#   custom_config = r'--oem 3 --psm 6 outputbase digits'
+#   txt = pytesseract.image_to_string(mask, config=custom_config)
   txt = pytesseract.image_to_string(mask, lang='eng')
   
   # clean the string
