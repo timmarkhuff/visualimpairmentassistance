@@ -23,7 +23,6 @@ Run the following command lines in the terminal of the Raspberry Pi to install t
 * sudo apt install tesseract-ocr -y
 * sudo apt install libtesseract-dev -y
 * pip install pyttsx3
-* pip install wheel
 * sudo apt-get update && sudo apt-get install espeak
 
 ### Deploying the model
