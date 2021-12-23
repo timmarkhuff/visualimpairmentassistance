@@ -1,4 +1,5 @@
-# from https://www.youtube.com/watch?v=cAU5qMCw9Bo
+# https://www.youtube.com/watch?v=cAU5qMCw9Bo
+# https://www.youtube.com/watch?v=I1eskLk0exg
 import pyrebase
 
 config = {
@@ -16,6 +17,11 @@ firebase = pyrebase.initialize_app(config)
 
 storage = firebase.storage()
 database = firebase.database()
+
+path_on_cloud = "images/foo.jpg"
+path_local = "screenshots/image.jpg" 
+storage.child(path_on_cloud).put(path_local)
+
 a = "Hello World"
 print (a)
 database.child("Visual Impairment Assistance")
