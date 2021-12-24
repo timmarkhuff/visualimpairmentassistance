@@ -19,6 +19,7 @@ Run the following command lines in the terminal of the Raspberry Pi to install t
 * pip install pyttsx3
 * sudo apt-get update && sudo apt-get install espeak
 * pip install gpiozero
+* pip install Pyrebase
 
 ### Starting the Application
 * Open the Raspberry Pi terminal and run all of the command lines found in the launch_commands file. You can copy and paste them and run them all at once. You have to run the program in this way, because it needs to run in the virtual environment. The python script can't be executed directly. 
