@@ -29,6 +29,7 @@ import pytesseract
 import ocr
 import pyttsx3
 import pyttsx3_functions
+import gpiozero
 
 # Define VideoStream class to handle streaming of video from webcam in separate processing thread
 # Source - Adrian Rosebrock, PyImageSearch: https://www.pyimagesearch.com/2015/12/28/increasing-raspberry-pi-fps-with-python-and-opencv/
@@ -172,6 +173,8 @@ freq = cv2.getTickFrequency()
 videostream = VideoStream(resolution=(imW,imH),framerate=30).start()
 time.sleep(1)
 
+
+button = gpiozero.Button(17)
 txt = ""
 
 #for frame1 in camera.capture_continuous(rawCapture, format="bgr",use_video_port=True):
@@ -257,7 +260,7 @@ while True:
     pressed_key = cv2.waitKey(1)
     
     # DETECT LARGEST OBJECT
-    if pressed_key == ord('d') or pressed_key == ord('D'):
+    if pressed_key == ord('d') or pressed_key == ord('D') or button.is_pressed:
             
         # capture time and date stamp
         dateTimeObj = datetime.now()
