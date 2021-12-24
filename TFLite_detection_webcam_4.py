@@ -75,10 +75,25 @@ class VideoStream:
         
 # GENERAL FUNCTIONS
 def write_to_text(text):
+    
     text = str(text)
-    with open('screenshots/log.txt', 'a') as f:
-        f.writelines(text)
-        f.writelines('\n')
+    with open('screenshots/log.txt', 'a') as file:
+        file.writelines(text)
+        file.writelines('\n')
+        
+def add_column_headers():
+    """
+    check if log.txt already has column headers
+    if not, add them                
+    """     
+        
+    column_headers = "DateTime,DetectedObjects,ObjectWidth,ObjectHeight,ObjectArea,DewarpTime,OCRTime,DetectedText"
+    with open('screenshots/log.txt', 'r') as original: data = original.read()
+    if len(data) > 0:       
+        if data[0] != "D":
+            with open('screenshots/log.txt', 'w') as modified: modified.write(column_headers + data)
+    elif len(data) == 0:
+        with open('screenshots/log.txt', 'w') as modified: modified.write(column_headers + data)
 
 # Define and parse input arguments
 parser = argparse.ArgumentParser()
@@ -179,6 +194,8 @@ button = gpiozero.Button(17)
 # the txt that is returned by the OCR function
 txt = ""
 
+add_column_headers()
+
 #for frame1 in camera.capture_continuous(rawCapture, format="bgr",use_video_port=True):
 while True:
 
@@ -263,9 +280,9 @@ while True:
     # DETECT LARGEST OBJECT
     if pressed_key == ord('d') or pressed_key == ord('D') or button.is_pressed:
             
-        # capture time and date stamp
-        dateTimeObj = datetime.now()
-        timestampStr = dateTimeObj.strftime("%Y.%m.%d.%H:%M.%S.%f")
+        # capture time and date stamp when button is pressed
+        dateTimeObjStart = datetime.utcnow()
+        timestampStr = dateTimeObjStart.strftime("%Y.%m.%d.%H:%M.%S.%f")
                          
         areas = []
         
@@ -292,8 +309,16 @@ while True:
                     # dewarp
                     dewarped, dewarp_process = ocr.process_and_unwarp(cropped_image, test_mode=1)
                     
+                    # calculate time elapsed from button press to dewarp completion
+                    dateTimeObjEndDewarp = datetime.utcnow()
+                    time_elapsed_dewarp = (dateTimeObjEndDewarp - dateTimeObjStart).total_seconds()
+                    
                     # OCR 
                     mask, txt = ocr.ocr_darius(dewarped)
+                    
+                    # calculate time elapsed from button press to OCR completion
+                    dateTimeObjEndOCR = datetime.utcnow()
+                    time_elapsed_ocr = (dateTimeObjEndOCR - dateTimeObjStart).total_seconds()
                     
                     # Text to speech with PYTTSX3
                     pyttsx3_functions.text_to_speech(timestampStr, txt)
@@ -304,7 +329,7 @@ while True:
 
                     # save mask
                     cv2.imwrite(f'screenshots/{timestampStr}_mask.png', mask)
-                
+                                    
                 # draw detected text on the screen
                 if len(txt) < 3:
                     txt = "(No text detected. Press 'd' to detect text.)"
@@ -315,11 +340,22 @@ while True:
                                     
         
         # write the results to log.txt
-        if len(detected_object_list) > 0:
-            write_to_text(f"{timestampStr},{txt}")
+        if len(detected_object_list) == 0:
+            time_elapsed_dewarp = 0
+            time_elapsed_ocr = 0
+            txt = ""
+            obj_width = 0
+            obj_height = 0
+            obj_area = 0
         else:
-            write_to_text(f"{timestampStr},No object detected")
+            obj_width = cropped_image.shape[0]
+            obj_height = cropped_image.shape[1]
+            obj_area = obj_width * obj_height
             
+            
+        write_to_text(f'{timestampStr},{len(detected_object_list)},'\
+                      f'{obj_width},{obj_height},{obj_area},'\
+                      f'{time_elapsed_dewarp},{time_elapsed_ocr},"{txt}"')   
             
     if pressed_key == ord('q') or pressed_key == ord('Q'):
         print("quitting")
