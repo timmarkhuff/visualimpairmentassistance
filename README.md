@@ -18,6 +18,7 @@ Run the following command lines in the terminal of the Raspberry Pi to install t
 * sudo apt install libtesseract-dev -y
 * pip install pyttsx3
 * sudo apt-get update && sudo apt-get install espeak
+* pip install gpiozero
 
 ### Starting the Application
 * Open the Raspberry Pi terminal and run all of the command lines found in the launch_commands file. You can copy and paste them and run them all at once. You have to run the program in this way, because it needs to run in the virtual environment. The python script can't be executed directly. 
