@@ -28,24 +28,25 @@ for i in arr:
     storage.child(path_on_cloud).put(path_local)
 print("Images sent!")
 
-# send data
-print("Sending data...")
-
-dict = {}
-with open("screenshots/log.txt", "r") as a_file:
-    for line in a_file:
-        stripped_line = line.strip() # strips the end-line break from each line
-
-        list = stripped_line.split(",")
-        key = list[0]
-        key = key.replace(".", "")
-        key = key.replace(":", "")
-        key = key.replace(" ", "")
-        dict[key] = list
-
-
-database.child("Visual Impairment Assistance")
-data = dict
-database.set(data)
-    
-print("Data sent!")
+# # send data
+# print("Sending data...")
+# 
+# dict = {}
+# with open("screenshots/log.txt", "r") as a_file:
+#     for line in a_file:
+#         stripped_line = line.strip() # strips the end-line break from each line
+# 
+#         list = stripped_line.split(",")
+#         key = list[0]
+#           
+#         key = key.replace(".", "")
+#         key = key.replace(":", "")
+#         key = key.replace(" ", "")
+#         print(key)
+#         dict[key] = list
+#  
+# database.child("Visual Impairment Assistance")
+# data = dict
+# database.set(data)
+#     
+# print("Data sent!")

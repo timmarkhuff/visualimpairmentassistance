@@ -173,8 +173,10 @@ freq = cv2.getTickFrequency()
 videostream = VideoStream(resolution=(imW,imH),framerate=30).start()
 time.sleep(1)
 
-
+# define the physical button for the device
 button = gpiozero.Button(17)
+
+# the txt that is returned by the OCR function
 txt = ""
 
 #for frame1 in camera.capture_continuous(rawCapture, format="bgr",use_video_port=True):
@@ -255,7 +257,6 @@ while True:
     time1 = (t2-t1)/freq
     frame_rate_calc= 1/time1
 
-    
     # check if key is pressed
     pressed_key = cv2.waitKey(1)
     
@@ -278,9 +279,7 @@ while True:
                         
             # label each object as largest(1) or not largest(0)
             for i in range(len(detected_object_list)):
-#                 detected_object_list[i].insert(0, timestampStr) # can probably remove this
                 if areas[i] == max_area:
-#                     detected_object_list[i].append(1) # can probably remove this
                     #save the coordinates of the largest object
                     largest_ymin = detected_object_list[i][1] # 
                     largest_xmin = detected_object_list[i][2] #  
@@ -305,36 +304,15 @@ while True:
 
                     # save mask
                     cv2.imwrite(f'screenshots/{timestampStr}_mask.png', mask)
-
-#                     # add detected text to object list
-#                     detected_object_list[i].append(txt)
                 
-#                 else:
-#                     # if the object is not the largest in the frame, append 0 and N/A
-#                     detected_object_list[i].append(0) # 0 = not the largest object
-#                     detected_object_list[i].append('N/A') # N/A = no text to save
-                
-                ####TRYING SOMETHING NEW####
-                
-                # draw detected text
+                # draw detected text on the screen
                 if len(txt) < 3:
                     txt = "(No text detected. Press 'd' to detect text.)"
                 cv2.putText(frame_to_save, f'{txt}',(30,100),cv2.FONT_HERSHEY_SIMPLEX,1,(255,255,0),2,cv2.LINE_AA)
                 
                 # take a screenshot
                 cv2.imwrite(f'screenshots/{timestampStr}_whole.png', frame_to_save) 
-                
-                #############################
-                    
-                
-                # convert list of object details to comma-separated string of object details
-                curr_obj = detected_object_list[i]
-                obj_as_string = ''
-                for i in curr_obj:
-                    obj_as_string =  obj_as_string + str(i) + ','
-                    
-#                 # write detected object to txt file
-#                 write_to_text(obj_as_string)
+                                    
         
         # write the results to log.txt
         if len(detected_object_list) > 0:
@@ -342,7 +320,6 @@ while True:
         else:
             write_to_text(f"{timestampStr},No object detected")
             
-    
             
     if pressed_key == ord('q') or pressed_key == ord('Q'):
         print("quitting")
