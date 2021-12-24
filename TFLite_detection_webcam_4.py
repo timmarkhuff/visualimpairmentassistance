@@ -314,7 +314,11 @@ while True:
                     time_elapsed_dewarp = (dateTimeObjEndDewarp - dateTimeObjStart).total_seconds()
                     
                     # OCR 
-                    mask, txt = ocr.ocr_darius(dewarped)
+                    mask, ocr_dict = ocr.darius_ocr_v2(dewarped)
+                    
+                    # parse OCR dictionary, remove low confidence words and add
+                    # semicolons to end of lines
+                    txt = ocr.parse_ocr_dict(ocr_dict)
                     
                     # calculate time elapsed from button press to OCR completion
                     dateTimeObjEndOCR = datetime.utcnow()
@@ -336,7 +340,10 @@ while True:
                 cv2.putText(frame_to_save, f'{txt}',(30,100),cv2.FONT_HERSHEY_SIMPLEX,1,(255,255,0),2,cv2.LINE_AA)
                 
                 # take a screenshot
-                cv2.imwrite(f'screenshots/{timestampStr}_whole.png', frame_to_save) 
+                cv2.imwrite(f'screenshots/{timestampStr}_whole.png', frame_to_save)
+        
+        else:
+            pyttsx3_functions.text_to_speech(timestampStr, "No signs detected.")
                                     
         
         # write the results to log.txt

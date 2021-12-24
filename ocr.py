@@ -2,6 +2,7 @@
 import cv2
 import numpy as np
 import pytesseract
+from pytesseract import Output
 import pyttsx3
 import math
 from re import X
@@ -314,6 +315,45 @@ def fig2img(fig):
   image_from_plot = image_from_plot.reshape(fig.canvas.get_width_height()[::-1] + (3,))
   return image_from_plot
 
+def darius_ocr_v2(img):
+  img = cv2.resize(img, (0, 0), fx=3, fy=3)
+  gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+  kernel = np.ones((2,2),np.uint8)
+  erosion = cv2.erode(gray,kernel,iterations = 2)
+  mask = cv2.bitwise_not(erosion)
+  ocr_dict = pytesseract.image_to_data(mask, lang='helvetica_bold', config='--psm 11', output_type=Output.DICT)
+  ocr_hr = pytesseract.image_to_data(mask, lang='helvetica_bold', config='--psm 11')
+
+  return mask, ocr_dict
+
+def parse_ocr_dict(ocr_dict, conf=50):
+  final_text = ""
+
+  for index, i in enumerate(ocr_dict['text']):
+    # remove all non alphanumeric characters from the string
+    cleaned_string = ''.join(filter(str.isalnum, i))
+
+    # filter out words with a low confidence score
+    if int(ocr_dict['conf'][index]) > conf:
+      final_text = final_text + cleaned_string
+      curr_block_num = int(ocr_dict['block_num'][index])
+      try:
+          next_block_num = int(ocr_dict['block_num'][index + 1])
+      except:
+          next_block_num = int(ocr_dict['block_num'][index]) + 1
+      if next_block_num != curr_block_num:
+
+        # add a semicolon to the end if this is the last word on the block
+        final_text = final_text + "; "
+      else:
+        # add a space to the end of the string if this is not the last word 
+        # on the block
+        final_text = final_text + " "
+  print(final_text)
+
+  return final_text
+
+
 
 def ocr_darius(img):
 
@@ -329,7 +369,7 @@ def ocr_darius(img):
   
   # clean the string
   txt = ''.join(c for c in txt if c.isalnum() or c == " " or c == "\n") # remove non alphanuemeric characters
-  txt = txt.replace('\n', ' ')
+  txt = txt.replace('\n', ', ')
     
     
   print(txt)
@@ -367,7 +407,7 @@ def ocr(img):
 #     mask = cv2.erode(img, kernel, iterations = 4)
 
     # OCR
-    txt = pytesseract.image_to_string(mask, lang='eng')
+    txt = pytesseract.image_to_string(mask, lang='helvetica_bold.traineddata')
     
     # clean the string
     txt = ''.join(c for c in txt if c.isalnum() or c == " " or c == "\n") # remove non alphanuemeric characters
