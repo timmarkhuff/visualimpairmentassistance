@@ -279,6 +279,11 @@ while True:
     
     # DETECT LARGEST OBJECT
     if pressed_key == ord('d') or pressed_key == ord('D') or button.is_pressed:
+        
+        # speak to the user when the button is pressed
+        message = "Scanning for signs..."
+        pyttsx3_functions.text_to_speech(message)
+        print(message)
             
         # capture time and date stamp when button is pressed
         dateTimeObjStart = datetime.utcnow()
@@ -325,14 +330,21 @@ while True:
                     time_elapsed_ocr = (dateTimeObjEndOCR - dateTimeObjStart).total_seconds()
                     
                     # Text to speech with PYTTSX3
-                    pyttsx3_functions.text_to_speech(timestampStr, txt)
+                    pyttsx3_functions.text_to_speech(txt)
                              
                     # SAVE IMAGES
                     # save dewarp process image
+                    message = "Saving files..."
+                    pyttsx3_functions.text_to_speech(message)
+                    print(message)
                     cv2.imwrite(f'screenshots/{timestampStr}_dewarp_process.png', dewarp_process)
 
                     # save mask
                     cv2.imwrite(f'screenshots/{timestampStr}_mask.png', mask)
+                    
+                    message = "Files saved successfully."
+                    pyttsx3_functions.text_to_speech(message)
+                    print(message)
                                     
                 # draw detected text on the screen
                 if len(txt) < 3:
@@ -343,7 +355,7 @@ while True:
                 cv2.imwrite(f'screenshots/{timestampStr}_whole.png', frame_to_save)
         
         else:
-            pyttsx3_functions.text_to_speech(timestampStr, "No signs detected.")
+            pyttsx3_functions.text_to_speech("No signs detected.")
                                     
         
         # write the results to log.txt

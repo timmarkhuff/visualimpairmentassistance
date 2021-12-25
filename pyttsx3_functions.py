@@ -7,12 +7,13 @@ import pyttsx3
 
 engine = pyttsx3.init()
 
-def text_to_speech(timestamp, txt):
-    if len(str(txt)) < 5:
+def text_to_speech(txt):
+    if len(str(txt)) < 3:
         txt = "No text detected."
     else:
         pass
         
     engine.say(txt)
-    engine.save_to_file(txt, f"screenshots/{timestamp}.mp3")
+    # timestamp = timestampStr = dateTimeObjStart.strftime("%Y.%m.%d.%H:%M.%S.%f")
+    # engine.save_to_file(txt, f"screenshots/{timestamp}.mp3")
     engine.runAndWait()
