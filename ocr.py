@@ -30,19 +30,16 @@ def get_destination_points(corners):
     h2 = np.sqrt((corners[1][0] - corners[3][0]) ** 2 + (corners[1][1] - corners[3][1]) ** 2)
     h = max(int(h1), int(h2))
 
-
-
-    print(f"h {h}")
-
     destination_corners = np.float32([(0, 0), (w - 1, 0), (0, h - 1), (w - 1, h - 1)])
 
 
-    print('\nThe destination points are: \n')
+    # print('\nThe destination points are: \n')
+    
     for index, c in enumerate(destination_corners):
         character = chr(65 + index) + "'"
-        print(character, ':', c)
+        # print(character, ':', c)
 
-    print('\nThe approximated height and width of the original image is: \n', (h, w))
+    # print('\nThe approximated height and width of the original image is: \n', (h, w))
     return destination_corners, h, w
 
 
@@ -60,7 +57,7 @@ def unwarp(img, src, dst, plotting_mode=0):
     """
     h, w = img.shape[:2]
     H, _ = cv2.findHomography(src, dst, method=cv2.RANSAC, ransacReprojThreshold=3.0)
-    print('\nThe homography matrix is: \n', H)
+    # print('\nThe homography matrix is: \n', H)
     un_warped = cv2.warpPerspective(img, H, (w, h), flags=cv2.INTER_LINEAR)
 
     if plotting_mode:
@@ -173,10 +170,10 @@ def detect_corners_from_contour(canvas, cnt, plotting_mode=0):
     approx_corners = cv2.approxPolyDP(cnt, epsilon, True)
     cv2.drawContours(canvas, approx_corners, -1, (255, 255, 0), 10)
     approx_corners = sorted(np.concatenate(approx_corners).tolist())
-    print('\nThe corner points are ...\n')
+    # print('\nThe corner points are ...\n')
     for index, c in enumerate(approx_corners):
         character = chr(65 + index)
-        print(character, ':', c)
+        # print(character, ':', c)
         cv2.putText(canvas, character, tuple(c), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2, cv2.LINE_AA)
 
     #############################################
@@ -186,7 +183,7 @@ def detect_corners_from_contour(canvas, cnt, plotting_mode=0):
     canvas_y = float(canvas.shape[0])
     bounding_corners = [[0., 0.], [canvas_x, 0.], [0., canvas_y], [canvas_x, canvas_y]] 
 
-    print(f'bounding_corners: {bounding_corners}')
+    # print(f'bounding_corners: {bounding_corners}')
 
     # corners = approx_corners
     closest_corner_list = []
@@ -206,7 +203,7 @@ def detect_corners_from_contour(canvas, cnt, plotting_mode=0):
       closest_corner_list.append(closest_corner)
     
     approx_corners = closest_corner_list
-    print(f"here are the final corners: {approx_corners}")
+    # print(f"here are the final corners: {approx_corners}")
     #############################################
 
     # #####################################################################
@@ -316,13 +313,18 @@ def fig2img(fig):
   return image_from_plot
 
 def darius_ocr_v2(img):
+  """
+  -takes an image
+  -processes the image
+  -performs OCR on the processed image
+  -returns mask and dictionary
+  """
   img = cv2.resize(img, (0, 0), fx=3, fy=3)
   gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
   kernel = np.ones((2,2),np.uint8)
   erosion = cv2.erode(gray,kernel,iterations = 2)
   mask = cv2.bitwise_not(erosion)
-  ocr_dict = pytesseract.image_to_data(mask, lang='helvetica_bold', config='--psm 11', output_type=Output.DICT)
-  ocr_hr = pytesseract.image_to_data(mask, lang='helvetica_bold', config='--psm 11')
+  ocr_dict = pytesseract.image_to_data(mask, lang='eng', config='--psm 11', output_type=Output.DICT)
 
   return mask, ocr_dict
 
@@ -349,7 +351,6 @@ def parse_ocr_dict(ocr_dict, conf=50):
         # add a space to the end of the string if this is not the last word 
         # on the block
         final_text = final_text + " "
-  print(final_text)
 
   return final_text
 
@@ -370,10 +371,7 @@ def ocr_darius(img):
   # clean the string
   txt = ''.join(c for c in txt if c.isalnum() or c == " " or c == "\n") # remove non alphanuemeric characters
   txt = txt.replace('\n', ', ')
-    
-    
-  print(txt)
-  
+      
   return mask, txt
 
 
@@ -412,10 +410,6 @@ def ocr(img):
     # clean the string
     txt = ''.join(c for c in txt if c.isalnum() or c == " " or c == "\n") # remove non alphanuemeric characters
     txt = txt.replace('\n', ' ')
-    
-#     txt = txt.replace('', '') # removing a weird non printable character # this might be redundant
-
-    print(txt)
-    
+        
     return mask, txt
 

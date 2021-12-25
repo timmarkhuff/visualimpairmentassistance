@@ -12,8 +12,13 @@ def text_to_speech(txt):
         txt = "No text detected."
     else:
         pass
-        
+    
+    print(f"Speaking: {txt}")
     engine.say(txt)
+    
+    # # saves an mp3 to the Raspberry Pi's memory
     # timestamp = timestampStr = dateTimeObjStart.strftime("%Y.%m.%d.%H:%M.%S.%f")
     # engine.save_to_file(txt, f"screenshots/{timestamp}.mp3")
+    
     engine.runAndWait()
+    
