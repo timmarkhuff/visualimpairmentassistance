@@ -29,3 +29,6 @@ We have trained a custom OCR model to recognize the Helvetica Bold text of Safew
 * Open the Raspberry Pi terminal and run all of the command lines found in the launch_commands file. You can copy and paste them and run them all at once. You have to run the program in this way, because it needs to run in the virtual environment. The python script can't be executed directly. 
 * Pressing d on the keyboard will cause the program to detect signs (we will need to replace this with the physical button later)
 * Presing q causes the program to quit. You can also just close the terminal window.
+
+### Other Resources
+* pairing bluetooth earbuds with Raspberry Pi: https://www.youtube.com/watch?v=lHwvoFLbAkM
