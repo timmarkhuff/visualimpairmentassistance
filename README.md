@@ -21,6 +21,10 @@ Run the following command lines in the terminal of the Raspberry Pi to install t
 * pip install gpiozero
 * sudo pip3 install pyrebase
 
+### Loading the OCR Model
+We have trained a custom OCR model to recognize the Helvetica Bold text of Safeway signs. This file needs to be moved into a particular folder in order to work.
+* in the command prompt, issue sudo <file path of the Helvetica Bold OCR model> /usr/share/tesseract-ocr/4.00/tessdata
+
 ### Starting the Application
 * Open the Raspberry Pi terminal and run all of the command lines found in the launch_commands file. You can copy and paste them and run them all at once. You have to run the program in this way, because it needs to run in the virtual environment. The python script can't be executed directly. 
 * Pressing d on the keyboard will cause the program to detect signs (we will need to replace this with the physical button later)
