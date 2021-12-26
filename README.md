@@ -32,3 +32,6 @@ We have trained a custom OCR model to recognize the Helvetica Bold text of Safew
 
 ### Other Resources
 * pairing bluetooth earbuds with Raspberry Pi: https://www.youtube.com/watch?v=lHwvoFLbAkM
+* bluetoothctl
+* scan on
+* pair <YOUR DEVICE'S ADDRESS>
