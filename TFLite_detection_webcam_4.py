@@ -100,6 +100,7 @@ def add_column_headers():
 
 # Define and parse input arguments
 parser = argparse.ArgumentParser()
+
 parser.add_argument('--modeldir', help='Folder the .tflite file is located in',
                     required=True)
 parser.add_argument('--graph', help='Name of the .tflite file, if different than detect.tflite',
@@ -112,12 +113,22 @@ parser.add_argument('--resolution', help='Desired webcam resolution in WxH. If t
                     default='1920x1080') # original '1280x720'
 parser.add_argument('--edgetpu', help='Use Coral Edge TPU Accelerator to speed up detection',
                     action='store_true')
+parser.add_argument('--showvideo', help='Display the video on screen. Disable this for better performance',
+                    default=1)
+
+parser.add_argument('--testmode', help='Calibrated for test signs. Disable for real Safeway signs.',
+                    default=1)
 
 args = parser.parse_args()
 
+# GLOBAL VARIABLES
 MODEL_NAME = args.modeldir
 GRAPH_NAME = args.graph
 LABELMAP_NAME = args.labels
+SHOW_VIDEO = int(args.showvideo)
+TEST_MODE = int(args.testmode)
+
+
 min_conf_threshold = float(args.threshold)
 resW, resH = args.resolution.split('x')
 imW, imH = int(resW), int(resH)
@@ -271,9 +282,10 @@ while True:
     if len(txt) < 3:
         txt = "(No text detected. Press 'd' to detect text.)"
     cv2.putText(frame, f'{txt}',(30,100),cv2.FONT_HERSHEY_SIMPLEX,1,(255,255,0),2,cv2.LINE_AA)
-
-#     # All the results have been drawn on the frame, so it's time to display it.
-#     cv2.imshow('Visual Impairment Assistance', frame)
+    
+    if SHOW_VIDEO:
+        # All the results have been drawn on the frame, so it's time to display it.
+        cv2.imshow('VIA', frame)
 
     # Calculate framerate
     t2 = cv2.getTickCount()
@@ -287,10 +299,7 @@ while True:
     if pressed_key == ord('d') or pressed_key == ord('D') or button.is_pressed or TAKE_PICTURE:
         
         TAKE_PICTURE = False
-        
-        # speak to the user when the button is pressed
-        pyttsx3_functions.text_to_speech("Scanning for signs...")
-            
+                    
         # capture time and date stamp when button is pressed
         dateTimeObjStart = datetime.utcnow()
         timestampStr = dateTimeObjStart.strftime("%Y.%m.%d.%H:%M.%S.%f")
@@ -299,6 +308,8 @@ while True:
         
         # make a list of the areas of all detected objects
         if detected_object_list != []:
+            # speak to the user when the image processing begins
+            pyttsx3_functions.text_to_speech("Reading sign...")
             for object in detected_object_list:
                 areas.append(object[-1])
                 
@@ -318,7 +329,7 @@ while True:
                     cropped_image = frame1[largest_ymin:largest_ymax, largest_xmin:largest_xmax]
                     
                     # dewarp
-                    dewarped, dewarp_process = ocr.process_and_unwarp(cropped_image, test_mode=1)
+                    dewarped, dewarp_process = ocr.process_and_unwarp(cropped_image, test_mode=TEST_MODE)
                     
                     # calculate time elapsed from button press to dewarp completion
                     dateTimeObjEndDewarp = datetime.utcnow()
@@ -337,34 +348,9 @@ while True:
                     
                     # Text to speech with PYTTSX3
                     pyttsx3_functions.text_to_speech(txt)
-                             
-#                     # SAVE IMAGES
-#                     # save dewarp process image
-#                     pyttsx3_functions.text_to_speech("Saving files...")
-#                     
-#                     # save the dewarp process image
-#                     cv2.imwrite(f'screenshots/{timestampStr}_dewarp_process.png', dewarp_process)
-# 
-#                     # save mask
-#                     cv2.imwrite(f'screenshots/{timestampStr}_mask.png', mask)
-#                     
-#                     # save the whole image
-#                     cv2.imwrite(f'screenshots/{timestampStr}_whole.png', frame_to_save)
-#                     
-#                     pyttsx3_functions.text_to_speech("Files saved successfully.")
-                    
-                
-                                    
-#                 # draw detected text on the screen
-#                 if len(txt) < 3:
-#                     txt = "(No text detected. Press 'd' to detect text.)"
-#                 cv2.putText(frame_to_save, f'{txt}',(30,100),cv2.FONT_HERSHEY_SIMPLEX,1,(255,255,0),2,cv2.LINE_AA)
-#                 
-#                 # take a screenshot
-#                 cv2.imwrite(f'screenshots/{timestampStr}_whole.png', frame_to_save)
-        
+                                     
         else:
-            pyttsx3_functions.text_to_speech("No signs detected.")
+            pyttsx3_functions.text_to_speech("Sorry, I don't see any signs. Please scan again.")
             
         # SAVE IMAGES
         pyttsx3_functions.text_to_speech("Saving files...")
@@ -405,7 +391,7 @@ while True:
                       f'{time_elapsed_dewarp},{time_elapsed_ocr},"{txt}"')   
             
     if pressed_key == ord('q') or pressed_key == ord('Q'):
-        print("quitting")
+        pyttsx3_functions.text_to_speech("Goodbye. Thank you for using Via!")
             
         # Clean up
         cv2.destroyAllWindows()

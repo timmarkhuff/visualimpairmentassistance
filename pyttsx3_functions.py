@@ -9,7 +9,7 @@ engine = pyttsx3.init()
 
 def text_to_speech(txt):
     if len(str(txt)) < 3:
-        txt = "No text detected."
+        txt = "I'm sorry. I can't read that text. Please try again."
     else:
         pass
     

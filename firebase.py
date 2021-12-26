@@ -22,6 +22,8 @@ database = firebase.database()
 print("Sending images...")
 arr = os.listdir("screenshots")
 for i in arr:
+    
+    
     path_on_cloud = f"screenshots/{i}"
     path_local = f"screenshots/{i}"
     storage.child(path_on_cloud).put(path_local)
@@ -46,6 +48,6 @@ with open("screenshots/log.txt", "r") as a_file:
  
 database.child("Visual Impairment Assistance")
 data = dict
-database.set(data)
+database.update(data)
     
 print("Data sent!")
