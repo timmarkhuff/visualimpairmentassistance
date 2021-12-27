@@ -35,3 +35,13 @@ Pairing bluetooth earbuds with Raspberry Pi: https://www.youtube.com/watch?v=lHw
   * bluetoothctl
   * scan on
   * pair <YOUR DEVICE'S ADDRESS>
+ 
+ Autorunning launch_via.sh at boot
+ video: https://www.youtube.com/watch?v=cZa1oCSdbUk
+* first make sure that you can run launch_via.sh directly. If there are any issues with this, you need to figure that out first. You might need to run chmod +x <PATH OF FILE ON THE RASPBERRY PI> in order to make this file executable.
+* go to home/pi
+* right click and click "Show Hidden" to see hidden folders
+* open the .config folder
+ * If there isn't already create a folder called autostart
+ * in autostart, create a new file called autorunmyfile.desktop
+ * open this file and write the following: ...
