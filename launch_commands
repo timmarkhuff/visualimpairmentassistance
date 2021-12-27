@@ -1,7 +1,0 @@
-# run these commands in the terminal of the Raspberry Pi to start the program
-cd tflite1
-source tflite1-env/bin/activate
-python3 TFLite_detection_webcam_4.py --modeldir=test_model_v2 --testmode=1 --showvideo=1
-
-# other models
-# actual_safeway_signs_v2_tradeoff
