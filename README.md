@@ -49,4 +49,4 @@ Pairing bluetooth earbuds with Raspberry Pi: https://www.youtube.com/watch?v=lHw
 <p>[Desktop Entry]</p>
 <p>Exec= sh /home/pi/tflite1/launch_via.sh</p>
 </blockquote>
- * save the file and try rebooting with sudo reboot
+* save the file and try rebooting with sudo reboot
