@@ -14,6 +14,7 @@ def text_to_speech(txt):
         pass
     
     print(f"Speaking: {txt}")
+    engine.setProperty('voice', "english_rp")
     engine.say(txt)
     
     # # saves an mp3 to the Raspberry Pi's memory
@@ -21,4 +22,8 @@ def text_to_speech(txt):
     # engine.save_to_file(txt, f"screenshots/{timestamp}.mp3")
     
     engine.runAndWait()
+    
+if __name__ == "__main__":
+    text_to_speech("Chips; Candy; Nuts; Snacks; Protein Bars; Granola;")
+    
     

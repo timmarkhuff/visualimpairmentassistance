@@ -134,8 +134,6 @@ resW, resH = args.resolution.split('x')
 imW, imH = int(resW), int(resH)
 use_TPU = args.edgetpu
 
-TAKE_PICTURE = True
-
 # Import TensorFlow libraries
 # If tflite_runtime is installed, import interpreter from tflite_runtime, else import from regular tensorflow
 # If using Coral Edge TPU, import the load_delegate library
@@ -296,9 +294,7 @@ while True:
     pressed_key = cv2.waitKey(1)
     
     # DETECT LARGEST OBJECT
-    if pressed_key == ord('d') or pressed_key == ord('D') or button.is_pressed or TAKE_PICTURE:
-        
-        TAKE_PICTURE = False
+    if pressed_key == ord('d') or pressed_key == ord('D') or button.is_pressed:
                     
         # capture time and date stamp when button is pressed
         dateTimeObjStart = datetime.utcnow()

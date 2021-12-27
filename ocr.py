@@ -277,12 +277,16 @@ def process_and_unwarp(image, test_mode=0, plotting_mode=0):
     cnv, largest_contour = detect_contour(mask, image.shape, plotting_mode=plotting_mode)
     corners, canvas = detect_corners_from_contour(cnv, largest_contour, plotting_mode=plotting_mode)
 
+    
+    ##############################################################################
+    # METHOD 2 FOR PLACING DEWARPED IMAGE IN FRAME
     _, h, w = get_destination_points(corners)
 
     offset_x = (image.shape[1] - w) / 2
-    offset_y = (image.shape[0] - h) / 2
+    offset_y = (image.shape[0] - h)
 
-    destination_points = np.float32([(offset_x, offset_y), (offset_x + w, offset_y), (offset_x, offset_y + h), (offset_x + w, offset_y + h)])
+    destination_points = np.float32([(offset_x, offset_y), (offset_x + w, offset_y), (offset_x, image.shape[0]), (offset_x + w, image.shape[0])])
+    ##############################################################################
 
     un_warped = unwarp(image, np.float32(corners), destination_points, plotting_mode=plotting_mode)
 
@@ -337,23 +341,27 @@ def parse_ocr_dict(ocr_dict, conf=50):
 
     # filter out words with a low confidence score
     if int(ocr_dict['conf'][index]) > conf:
+
+      # add "Aisle " in front of aisle numbers to make them more intelligible
+      if cleaned_string.isnumeric():
+        cleaned_string = "Aisle " + cleaned_string
+
       final_text = final_text + cleaned_string
       curr_block_num = int(ocr_dict['block_num'][index])
       try:
-          next_block_num = int(ocr_dict['block_num'][index + 1])
+        next_block_num = int(ocr_dict['block_num'][index + 1])
       except:
-          next_block_num = int(ocr_dict['block_num'][index]) + 1
-      if next_block_num != curr_block_num:
+        next_block_num = int(ocr_dict['block_num'][index]) + 1
 
-        # add a semicolon to the end if this is the last word on the block
-        final_text = final_text + "; "
+      if next_block_num != curr_block_num:
+          # add a semicolon to the end if this is the last word on the block
+          final_text = final_text + "; "
       else:
         # add a space to the end of the string if this is not the last word 
         # on the block
         final_text = final_text + " "
 
   return final_text
-
 
 
 def ocr_darius(img):
