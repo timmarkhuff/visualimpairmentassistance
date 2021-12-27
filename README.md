@@ -44,7 +44,7 @@ Pairing bluetooth earbuds with Raspberry Pi: https://www.youtube.com/watch?v=lHw
 * open the .config folder
  * Create a folder called 'autostart' if there isn't already one
  * in autostart, create a new file called autorunmyfile.desktop
- * open this file and write the following: ...
+ * open this file and write the following:
 <blockquote>
 <p>[Desktop Entry]</p>
 <p>Exec= sh /home/pi/tflite1/launch_via.sh</p>
