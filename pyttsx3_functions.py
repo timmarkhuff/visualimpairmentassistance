@@ -4,8 +4,10 @@
 # sudo apt-get update && sudo apt-get install espeak
 
 import pyttsx3
+import threading
 
 engine = pyttsx3.init()
+engine.setProperty('voice', "english_rp")
 
 def text_to_speech(txt):
     if len(str(txt)) < 3:
@@ -13,17 +15,24 @@ def text_to_speech(txt):
     else:
         pass
     
-    print(f"Speaking: {txt}")
-    engine.setProperty('voice', "english_rp")
-    engine.say(txt)
+    try:
+        print(f"Speaking: {txt}")
+        engine.say(txt)
+        engine.runAndWait()
+    except:
+        print(f"Speaking (suppressed): {txt}")
     
     # # saves an mp3 to the Raspberry Pi's memory
     # timestamp = timestampStr = dateTimeObjStart.strftime("%Y.%m.%d.%H:%M.%S.%f")
     # engine.save_to_file(txt, f"screenshots/{timestamp}.mp3")
-    
-    engine.runAndWait()
-    
+
+
 if __name__ == "__main__":
     text_to_speech("Chips; Candy; Nuts; Snacks; Protein Bars; Granola;")
+    run_and_wait()
+
+
+
+
     
     

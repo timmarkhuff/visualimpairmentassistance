@@ -6,6 +6,7 @@ from pytesseract import Output
 import pyttsx3
 import math
 from re import X
+from threading import Thread
 
 def get_destination_points(corners):
     """
@@ -364,60 +365,10 @@ def parse_ocr_dict(ocr_dict, conf=50):
   return final_text
 
 
-def ocr_darius(img):
-
-  img = cv2.resize(img, (0, 0), fx=3, fy=3)
-  kernel = np.ones((2,2),np.uint8)
-  erosion = cv2.erode(img,kernel,iterations = 2)
-  mask = erosion
-
-  # OCR
-#   custom_config = r'--oem 3 --psm 6 outputbase digits'
-#   txt = pytesseract.image_to_string(mask, config=custom_config)
-  txt = pytesseract.image_to_string(mask, lang='eng')
-  
-  # clean the string
-  txt = ''.join(c for c in txt if c.isalnum() or c == " " or c == "\n") # remove non alphanuemeric characters
-  txt = txt.replace('\n', ', ')
-      
-  return mask, txt
-
-
-def ocr(img):
-    """
-    -takes an image
-    -processes the image
-    -performs OCR on the processed image
-    -returns mask and text
-    """
+def save_image(image, file_path):
+    def thread():
+        cv2.imwrite(file_path, image)
     
-    # BEGIN TESSERACT
-    # Up-sample
-    img = cv2.resize(img, (0, 0), fx=2, fy=2)
-
-    # Convert to greyscale
-    # greyscale = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-
-    # Convert to HSV color-space
-    hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV) 
- 
-    # Get the binary mask
-    # mask = cv2.inRange(greyscale, 0, 62)
-    mask = cv2.inRange(hsv, np.array([0, 0, 90]), np.array([179, 255, 255]))
-    mask = cv2.inRange(hsv, np.array([0, 0, 60]), np.array([179, 255, 255]))
-
-    #invert the binary mask
-    mask = cv2.bitwise_not(mask)
-
-#     kernel = np.ones((2,2), np.uint8)
-#     mask = cv2.erode(img, kernel, iterations = 4)
-
-    # OCR
-    txt = pytesseract.image_to_string(mask, lang='helvetica_bold.traineddata')
+    Thread(target=thread).start()
     
-    # clean the string
-    txt = ''.join(c for c in txt if c.isalnum() or c == " " or c == "\n") # remove non alphanuemeric characters
-    txt = txt.replace('\n', ' ')
-        
-    return mask, txt
 

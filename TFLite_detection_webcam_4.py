@@ -31,9 +31,6 @@ import pyttsx3
 import pyttsx3_functions
 import gpiozero
 
-# welcome message
-pyttsx3_functions.text_to_speech("Welcome to VIA. Press the button on your device to scan for signs.")
-
 # Define VideoStream class to handle streaming of video from webcam in separate processing thread
 # Source - Adrian Rosebrock, PyImageSearch: https://www.pyimagesearch.com/2015/12/28/increasing-raspberry-pi-fps-with-python-and-opencv/
 class VideoStream:
@@ -76,28 +73,6 @@ class VideoStream:
 	# Indicate that the camera and thread should be stopped
         self.stopped = True
         
-# GENERAL FUNCTIONS
-def write_to_text(text):
-    
-    text = str(text)
-    with open('screenshots/log.txt', 'a') as file:
-        file.writelines(text)
-        file.writelines('\n')
-        
-def add_column_headers():
-    """
-    check if log.txt already has column headers
-    if not, add them                
-    """     
-        
-    column_headers = "DateTime,DetectedObjects,ObjectWidth,ObjectHeight,ObjectArea,DewarpTime,OCRTime,DetectedText"
-    with open('screenshots/log.txt', 'r') as original: data = original.read()
-    if len(data) > 0:       
-        if data[0] != "D":
-            with open('screenshots/log.txt', 'w') as modified: modified.write(column_headers + data)
-    elif len(data) == 0:
-        with open('screenshots/log.txt', 'w') as modified: modified.write(column_headers + data)
-
 # Define and parse input arguments
 parser = argparse.ArgumentParser()
 
@@ -127,12 +102,107 @@ GRAPH_NAME = args.graph
 LABELMAP_NAME = args.labels
 SHOW_VIDEO = int(args.showvideo)
 TEST_MODE = int(args.testmode)
-
+RUN = True
+SHORT_PRESS = False
 
 min_conf_threshold = float(args.threshold)
 resW, resH = args.resolution.split('x')
 imW, imH = int(resW), int(resH)
 use_TPU = args.edgetpu
+
+# GENERAL FUNCTIONS
+def write_to_text(text):
+    
+    text = str(text)
+    with open('screenshots/log.txt', 'a') as file:
+        file.writelines(text)
+        file.writelines('\n')
+        
+def add_column_headers():
+    """
+    check if log.txt already has column headers
+    if not, add them                
+    """     
+        
+    column_headers = "DateTime,DetectedObjects,ObjectWidth,ObjectHeight,ObjectArea,DewarpTime,OCRTime,DetectedText"
+    with open('screenshots/log.txt', 'r') as original: data = original.read()
+    if len(data) > 0:       
+        if data[0] != "D":
+            with open('screenshots/log.txt', 'w') as modified: modified.write(column_headers + data)
+    elif len(data) == 0:
+        with open('screenshots/log.txt', 'w') as modified: modified.write(column_headers + data)
+
+def handle_button(): 
+    def thread():
+        global RUN, SHORT_PRESS, SHOW_VIDEO, TEST_MODE
+        sampling_rate = .1 # in seconds
+        short_press_duration = (.1, 1) # a range of seconds
+        long_hold_duration = 6 # seconds
+        array_length = int(np.round(long_hold_duration / sampling_rate))
+        array = np.array(np.zeros(array_length, dtype=int))
+        array_one_quarter = int(np.round(array_length * .25))
+        array_one_half = int(np.round(array_length * .5))
+        array_three_quarters = int(np.round(array_length * .75))
+    
+        # define the physical button for the device
+        button = gpiozero.Button(17)
+        while RUN:
+            if button.is_pressed:
+                array = np.concatenate((np.ones(1, dtype=int), array[0:-1]), axis=0)
+            else:
+                array = np.concatenate((np.zeros(1, dtype=int), array[0:-1]), axis=0)
+            # print(array)
+            
+            # check if the button has been released
+            if array[0] == 0 and array[1] == 1: 
+                press_samples = 1
+                for index, i in enumerate(array[:-2]):
+                    if i == 1 and array[index + 1] == 1:
+                        press_samples += 1
+                    elif i == 1 and array[index + 1] == 0:
+                      break
+                    
+                upper_cycles = short_press_duration[1] / sampling_rate
+                lower_cycles = short_press_duration[0] / sampling_rate
+                
+                # check the duration for which the button was held
+                # perform certain actions accordingly
+                if lower_cycles < press_samples < upper_cycles:
+                    SHORT_PRESS = True
+                if array_one_quarter <= press_samples < array_one_half:
+                    if SHOW_VIDEO:
+                        SHOW_VIDEO = False
+                        pyttsx3_functions.text_to_speech("Video disabled.")
+                        cv2.destroyAllWindows()
+                        videostream.stop()
+                    else:
+                        SHOW_VIDEO = True
+                        pyttsx3_functions.text_to_speech("Video enabled.")
+                if array_one_half <= press_samples:
+                    if TEST_MODE:
+                        TEST_MODE = False
+                        pyttsx3_functions.text_to_speech("Test mode disabled.")
+                    else:
+                        TEST_MODE = True
+                        pyttsx3_functions.text_to_speech("Test mode enabled.")
+                        
+            # perform certain actions if the button is held for a specified duration 
+            if all(array[:array_one_quarter]) and array[array_one_quarter] == 0:
+                pyttsx3_functions.text_to_speech("Release button to toggle video mode.")
+            elif all(array[:array_one_half]) and array[array_one_half] == 0:
+                pyttsx3_functions.text_to_speech("Release button to toggle test mode.")
+            elif all(array[:array_three_quarters]) and array[array_three_quarters] == 0:
+                pyttsx3_functions.text_to_speech("Continue holding button to shut down.")
+            elif all(array):
+                pyttsx3_functions.text_to_speech("Shutting down.")
+                time.sleep(1)
+                os.system("poweroff")             
+                
+            time.sleep(sampling_rate)
+                
+    Thread(target=thread).start()
+
+
 
 # Import TensorFlow libraries
 # If tflite_runtime is installed, import interpreter from tflite_runtime, else import from regular tensorflow
@@ -202,17 +272,20 @@ freq = cv2.getTickFrequency()
 videostream = VideoStream(resolution=(imW,imH),framerate=30).start()
 time.sleep(1)
 
-# define the physical button for the device
-button = gpiozero.Button(17)
-
 # the txt that is returned by the OCR function
 txt = ""
 
 # add column headers to log.txt
 add_column_headers()
 
+# welcome message
+pyttsx3_functions.text_to_speech("Welcome to VIA. Press the button on your device to scan for signs.")
+
+# initiate handle button function
+handle_button()
+
 #for frame1 in camera.capture_continuous(rawCapture, format="bgr",use_video_port=True):
-while True:
+while RUN:
 
     # Start timer (for calculating frame rate)
     t1 = cv2.getTickCount()
@@ -294,7 +367,7 @@ while True:
     pressed_key = cv2.waitKey(1)
     
     # DETECT LARGEST OBJECT
-    if pressed_key == ord('d') or pressed_key == ord('D') or button.is_pressed:
+    if pressed_key == ord('d') or pressed_key == ord('D') or SHORT_PRESS:
                     
         # capture time and date stamp when button is pressed
         dateTimeObjStart = datetime.utcnow()
@@ -347,27 +420,43 @@ while True:
                                      
         else:
             pyttsx3_functions.text_to_speech("Sorry, I don't see any signs. Please scan again.")
-            
-        # SAVE IMAGES
-        pyttsx3_functions.text_to_speech("Saving files...")
+        
+        # set this flag to false so that the button can be pressed again.
+        SHORT_PRESS = False
+        
         # draw detected text on the screen
         if len(txt) < 3:
             txt = "(No text detected. Press 'd' to detect text.)"
         cv2.putText(frame_to_save, f'{txt}',(30,100),cv2.FONT_HERSHEY_SIMPLEX,1,(255,255,0),2,cv2.LINE_AA)
         
-        # take a screenshot
-        cv2.imwrite(f'screenshots/{timestampStr}_whole.png', frame_to_save)
+#         # save whole image
+#         Thread(target=cv2.imwrite(f'screenshots/{timestampStr}_whole.png', frame_to_save)).start()
+#         
+#         if detected_object_list != []:
+#                         
+#             # save the dewarp process image
+#             Thread(target=cv2.imwrite(f'screenshots/{timestampStr}_dewarp_process.png', dewarp_process)).start()
+# 
+#             # save mask
+#             Thread(target=cv2.imwrite(f'screenshots/{timestampStr}_mask.png', mask)).start()
+
+        # save whole image
+        image = frame_to_save
+        file_path = f'screenshots/{timestampStr}_whole.png'
+        ocr.save_image(image, file_path)
         
         if detected_object_list != []:
                         
             # save the dewarp process image
-            cv2.imwrite(f'screenshots/{timestampStr}_dewarp_process.png', dewarp_process)
+            image = dewarp_process
+            file_path = f'screenshots/{timestampStr}_dewarp_process.png'
+            ocr.save_image(image, file_path)
 
             # save mask
-            cv2.imwrite(f'screenshots/{timestampStr}_mask.png', mask)
-            
-        pyttsx3_functions.text_to_speech("Files saved successfully.")
-            
+            image = mask
+            file_path = f'screenshots/{timestampStr}_mask.png'
+            ocr.save_image(image, file_path)
+
         # write the results to log.txt
         if len(detected_object_list) == 0:
             time_elapsed_dewarp = 0
@@ -384,12 +473,15 @@ while True:
             
         write_to_text(f'{timestampStr},{len(detected_object_list)},'\
                       f'{obj_width},{obj_height},{obj_area},'\
-                      f'{time_elapsed_dewarp},{time_elapsed_ocr},"{txt}"')   
+                      f'{time_elapsed_dewarp},{time_elapsed_ocr},"{txt}"')
+    
             
     if pressed_key == ord('q') or pressed_key == ord('Q'):
         pyttsx3_functions.text_to_speech("Goodbye. Thank you for using Via!")
+      
             
         # Clean up
+        RUN = False
         cv2.destroyAllWindows()
         videostream.stop()
         break
