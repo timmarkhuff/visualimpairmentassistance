@@ -83,7 +83,7 @@ parser.add_argument('--graph', help='Name of the .tflite file, if different than
 parser.add_argument('--labels', help='Name of the labelmap file, if different than labelmap.txt',
                     default='labelmap.txt')
 parser.add_argument('--threshold', help='Minimum confidence threshold for displaying detected objects',
-                    default=0.5)
+                    default=0.7)
 parser.add_argument('--resolution', help='Desired webcam resolution in WxH. If the webcam does not support the resolution entered, errors may occur.',
                     default='1920x1080') # original '1280x720'
 parser.add_argument('--edgetpu', help='Use Coral Edge TPU Accelerator to speed up detection',
@@ -104,6 +104,7 @@ SHOW_VIDEO = int(args.showvideo)
 TEST_MODE = int(args.testmode)
 RUN = True
 SHORT_PRESS = False
+RETRY_ATTEMPTS = 0
 
 min_conf_threshold = float(args.threshold)
 resW, resH = args.resolution.split('x')
@@ -169,6 +170,8 @@ def handle_button():
                 # perform certain actions accordingly
                 if lower_cycles < press_samples < upper_cycles:
                     SHORT_PRESS = True
+                    # speak to the user when the image processing begins
+                    pyttsx3_functions.text_to_speech("Scanning...")
                 if array_one_quarter <= press_samples < array_one_half:
                     if SHOW_VIDEO:
                         SHOW_VIDEO = False
@@ -351,7 +354,7 @@ while RUN:
     
     # draw detected text
     if len(txt) < 3:
-        txt = "(No text detected. Press 'd' to detect text.)"
+        txt = "(No text detected. Press the button to scan for signs.)"
     cv2.putText(frame, f'{txt}',(30,100),cv2.FONT_HERSHEY_SIMPLEX,1,(255,255,0),2,cv2.LINE_AA)
     
     if SHOW_VIDEO:
@@ -368,17 +371,23 @@ while RUN:
     
     # DETECT LARGEST OBJECT
     if pressed_key == ord('d') or pressed_key == ord('D') or SHORT_PRESS:
-                    
-        # capture time and date stamp when button is pressed
-        dateTimeObjStart = datetime.utcnow()
-        timestampStr = dateTimeObjStart.strftime("%Y.%m.%d.%H:%M.%S.%f")
-                         
+        
+        # capture a new time and date stamp when button is pressed
+        # skip this part if we are re-attempting. This will give
+        # us an accurate time score
+        if RETRY_ATTEMPTS == 0:
+            
+            dateTimeObjStart = datetime.utcnow()
+            timestampStr = dateTimeObjStart.strftime("%Y.%m.%d.%H:%M.%S.%f")
+        else:
+            pass
+                                 
         areas = []
         
         # make a list of the areas of all detected objects
         if detected_object_list != []:
             # speak to the user when the image processing begins
-            pyttsx3_functions.text_to_speech("Reading sign...")
+            # pyttsx3_functions.text_to_speech("Reading sign...") # this seems to be slowing the process down
             for object in detected_object_list:
                 areas.append(object[-1])
                 
@@ -389,11 +398,11 @@ while RUN:
             for i in range(len(detected_object_list)):
                 if areas[i] == max_area:
                     #save the coordinates of the largest object
-                    largest_ymin = detected_object_list[i][1] # 
-                    largest_xmin = detected_object_list[i][2] #  
-                    largest_ymax = detected_object_list[i][3] # 
-                    largest_xmax = detected_object_list[i][4] # 
-                    
+                    largest_ymin = detected_object_list[i][1] 
+                    largest_xmin = detected_object_list[i][2]  
+                    largest_ymax = detected_object_list[i][3] 
+                    largest_xmax = detected_object_list[i][4]
+                                        
                     # get cropped image
                     cropped_image = frame1[largest_ymin:largest_ymax, largest_xmin:largest_xmax]
                     
@@ -417,28 +426,27 @@ while RUN:
                     
                     # Text to speech with PYTTSX3
                     pyttsx3_functions.text_to_speech(txt)
+                    
+                    # reset these variabls
+                    SHORT_PRESS = False
+                    RETRY_ATTEMPTS = 0
                                      
         else:
-            pyttsx3_functions.text_to_speech("Sorry, I don't see any signs. Please scan again.")
+            if RETRY_ATTEMPTS <= 3:
+                print("No signs detected. Reattempting...")
+                RETRY_ATTEMPTS += 1
+            else:
+                pyttsx3_functions.text_to_speech("Sorry, I don't see any signs. Please scan again.")
+                # set this flag back to False so that the button can be pressed again.
+                SHORT_PRESS = False
+                RETRY_ATTEMPTS = 0
         
-        # set this flag to false so that the button can be pressed again.
-        SHORT_PRESS = False
+        
         
         # draw detected text on the screen
         if len(txt) < 3:
             txt = "(No text detected. Press 'd' to detect text.)"
         cv2.putText(frame_to_save, f'{txt}',(30,100),cv2.FONT_HERSHEY_SIMPLEX,1,(255,255,0),2,cv2.LINE_AA)
-        
-#         # save whole image
-#         Thread(target=cv2.imwrite(f'screenshots/{timestampStr}_whole.png', frame_to_save)).start()
-#         
-#         if detected_object_list != []:
-#                         
-#             # save the dewarp process image
-#             Thread(target=cv2.imwrite(f'screenshots/{timestampStr}_dewarp_process.png', dewarp_process)).start()
-# 
-#             # save mask
-#             Thread(target=cv2.imwrite(f'screenshots/{timestampStr}_mask.png', mask)).start()
 
         # save whole image
         image = frame_to_save
@@ -457,23 +465,24 @@ while RUN:
             file_path = f'screenshots/{timestampStr}_mask.png'
             ocr.save_image(image, file_path)
 
-        # write the results to log.txt
-        if len(detected_object_list) == 0:
-            time_elapsed_dewarp = 0
-            time_elapsed_ocr = 0
-            txt = ""
-            obj_width = 0
-            obj_height = 0
-            obj_area = 0
-        else:
-            obj_width = cropped_image.shape[0]
-            obj_height = cropped_image.shape[1]
-            obj_area = obj_width * obj_height
             
+        if RETRY_ATTEMPTS == 0:
+            # write the results to log.txt
+            if len(detected_object_list) == 0:
+                time_elapsed_dewarp = 0
+                time_elapsed_ocr = 0
+                txt = ""
+                obj_width = 0
+                obj_height = 0
+                obj_area = 0
+            else:
+                obj_width = cropped_image.shape[0]
+                obj_height = cropped_image.shape[1]
+                obj_area = obj_width * obj_height
             
-        write_to_text(f'{timestampStr},{len(detected_object_list)},'\
-                      f'{obj_width},{obj_height},{obj_area},'\
-                      f'{time_elapsed_dewarp},{time_elapsed_ocr},"{txt}"')
+            write_to_text(f'{timestampStr},{len(detected_object_list)},'\
+                          f'{obj_width},{obj_height},{obj_area},'\
+                          f'{time_elapsed_dewarp},{time_elapsed_ocr},"{txt}"')
     
             
     if pressed_key == ord('q') or pressed_key == ord('Q'):
