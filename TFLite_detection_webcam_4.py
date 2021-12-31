@@ -177,7 +177,6 @@ def handle_button():
                         SHOW_VIDEO = False
                         pyttsx3_functions.text_to_speech("Video disabled.")
                         cv2.destroyAllWindows()
-                        videostream.stop()
                     else:
                         SHOW_VIDEO = True
                         pyttsx3_functions.text_to_speech("Video enabled.")
@@ -376,7 +375,6 @@ while RUN:
         # skip this part if we are re-attempting. This will give
         # us an accurate time score
         if RETRY_ATTEMPTS == 0:
-            
             dateTimeObjStart = datetime.utcnow()
             timestampStr = dateTimeObjStart.strftime("%Y.%m.%d.%H:%M.%S.%f")
         else:
