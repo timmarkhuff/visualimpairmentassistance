@@ -53,5 +53,5 @@ Pairing bluetooth earbuds with Raspberry Pi: https://www.youtube.com/watch?v=lHw
 
  
 ### Colab Notebooks
-Evaluation tool: https://colab.research.google.com/drive/1JWP9frQsAjJZEZ1R3fSnLKt45Ljt9afG#scrollTo=BYhlntza-n32
-OCR and Deskewing: https://colab.research.google.com/drive/1XO5dkKX5ewQX9OIKJIrxdihNJ-GDSbi6#scrollTo=HTtu-A4KuCmk
+* Evaluation tool: https://colab.research.google.com/drive/1JWP9frQsAjJZEZ1R3fSnLKt45Ljt9afG#scrollTo=BYhlntza-n32
+* OCR and Deskewing: https://colab.research.google.com/drive/1XO5dkKX5ewQX9OIKJIrxdihNJ-GDSbi6#scrollTo=HTtu-A4KuCmk
