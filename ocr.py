@@ -230,18 +230,19 @@ def hsv_threshold(img, plotting_mode=0):
     #convert the BGR image to HSV colour space
     hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
 
+#     # OLDER VALUES
+#     #set the lower and upper bounds for target color
+#     lower = np.array([70,30,0])
+#     upper = np.array([120,255,200])
+    
+    # NEW VALUES
     #set the lower and upper bounds for target color
-    lower = np.array([70,30,0])
-    upper = np.array([120,255,200])
+    lower = np.array([100, 0, 0])
+    upper = np.array([140, 255, 130])
 
     #create a mask based on an HSV range
     mask = cv2.inRange(hsv, lower, upper)
 
-    # # Inverting the mask 
-    # mask = cv2.bitwise_not(mask)
-
-    # #perform bitwise and on the original image arrays using the mask # don't think this is needed
-    # thresh = cv2.bitwise_and(image, image, mask=mask)
 
     if plotting_mode:
       plt.imshow(cv2.cvtColor(mask, cv2.COLOR_BGR2RGB))
@@ -289,25 +290,30 @@ def process_and_unwarp(image, test_mode=0, plotting_mode=0):
     destination_points = np.float32([(offset_x, offset_y), (offset_x + w, offset_y), (offset_x, image.shape[0]), (offset_x + w, image.shape[0])])
     ##############################################################################
 
-    un_warped = unwarp(image, np.float32(corners), destination_points, plotting_mode=plotting_mode)
+    try:
+        un_warped = unwarp(image, np.float32(corners), destination_points, plotting_mode=plotting_mode)
 
-    cropped = un_warped[0:h, 0:w]
-    
-    if plotting_mode:
-      # plot
-      f, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 8))
-      # f.subplots_adjust(hspace=.2, wspace=.05)
-      ax1.imshow(un_warped)
-      # ax2.imshow(cropped)
-      plt.show()
+        cropped = un_warped[0:h, 0:w]
+        
+        if plotting_mode:
+          # plot
+          f, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 8))
+          # f.subplots_adjust(hspace=.2, wspace=.05)
+          ax1.imshow(un_warped)
+          # ax2.imshow(cropped)
+          plt.show()
 
-    # convert binary mask to RGB so that it can be concatenated with other images
-    mask_rgb = cv2.cvtColor(mask, cv2.COLOR_GRAY2RGB)
+        # convert binary mask to RGB so that it can be concatenated with other images
+        mask_rgb = cv2.cvtColor(mask, cv2.COLOR_GRAY2RGB)
 
-    # concatenate unwarping images
-    top = cv2.hconcat([image, mask_rgb])
-    bottom = cv2.hconcat([canvas, un_warped])
-    unwarp_process_image = cv2.vconcat([top, bottom])
+        # concatenate unwarping images
+        top = cv2.hconcat([image, mask_rgb])
+        bottom = cv2.hconcat([canvas, un_warped])
+        unwarp_process_image = cv2.vconcat([top, bottom])
+    except:
+      un_warped = image
+      unwarp_process_image = image
+      cv2.putText(unwarp_process_image, "Failed to dewarp.",(30,50),cv2.FONT_HERSHEY_SIMPLEX,1,(0,255,255),2,cv2.LINE_AA)
 
     return un_warped, unwarp_process_image
 
