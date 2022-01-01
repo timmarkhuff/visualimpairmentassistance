@@ -404,8 +404,14 @@ while RUN:
                     # get cropped image
                     cropped_image = frame1[largest_ymin:largest_ymax, largest_xmin:largest_xmax]
                     
-                    # dewarp
-                    dewarped, dewarp_process = ocr.process_and_unwarp(cropped_image, test_mode=TEST_MODE)
+                    try:
+                        # dewarp
+                        dewarped, dewarp_process = ocr.process_and_unwarp(cropped_image, test_mode=TEST_MODE)
+                    except:
+                        unwarped = cropped_image.copy()
+                        unwarp_process_image = cropped_image.copy()
+                        cv2.putText(unwarp_process_image, "Failed to dewarp.",(30,50),cv2.FONT_HERSHEY_SIMPLEX,1,(0,255,255),2,cv2.LINE_AA)
+                        
                     
                     # calculate time elapsed from button press to dewarp completion
                     dateTimeObjEndDewarp = datetime.utcnow()
