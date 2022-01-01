@@ -52,6 +52,7 @@ Pairing bluetooth earbuds with Raspberry Pi: https://www.youtube.com/watch?v=lHw
 * save the file and try rebooting with sudo reboot
 
  
-### Colab Notebooks
+### Links
+* Evaluation spreadsheet: https://docs.google.com/spreadsheets/d/1BlH0pvSAp-lAHkUfpUjbiDSlW6x7IwIBKmuGCcyp8vs/edit#gid=0
 * Evaluation tool: https://colab.research.google.com/drive/1JWP9frQsAjJZEZ1R3fSnLKt45Ljt9afG#scrollTo=BYhlntza-n32
-* OCR and Deskewing: https://colab.research.google.com/drive/1XO5dkKX5ewQX9OIKJIrxdihNJ-GDSbi6#scrollTo=HTtu-A4KuCmk
+* OCR and Deskewing Colab notebook: https://colab.research.google.com/drive/1XO5dkKX5ewQX9OIKJIrxdihNJ-GDSbi6#scrollTo=HTtu-A4KuCmk
