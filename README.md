@@ -50,3 +50,8 @@ Pairing bluetooth earbuds with Raspberry Pi: https://www.youtube.com/watch?v=lHw
 <p>Exec= sh /home/pi/tflite1/launch_via.sh</p>
 </blockquote>
 * save the file and try rebooting with sudo reboot
+
+ 
+### Colab Notebooks
+Evaluation tool: https://colab.research.google.com/drive/1JWP9frQsAjJZEZ1R3fSnLKt45Ljt9afG#scrollTo=BYhlntza-n32
+OCR and Deskewing: https://colab.research.google.com/drive/1XO5dkKX5ewQX9OIKJIrxdihNJ-GDSbi6#scrollTo=HTtu-A4KuCmk
