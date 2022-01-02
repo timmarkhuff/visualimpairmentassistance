@@ -104,7 +104,8 @@ SHOW_VIDEO = int(args.showvideo)
 TEST_MODE = int(args.testmode)
 RUN = True
 SHORT_PRESS = False
-RETRY_ATTEMPTS = 0
+MAX_RETRIES = 3 # number or object detection retries allowed
+RETRY_ATTEMPTS = 0 # the current number of object detection retries
 
 min_conf_threshold = float(args.threshold)
 resW, resH = args.resolution.split('x')
@@ -348,17 +349,6 @@ while RUN:
             
     # Draw framerate in corner of frame
     cv2.putText(frame,'FPS: {0:.2f}'.format(frame_rate_calc),(30,50),cv2.FONT_HERSHEY_SIMPLEX,1,(255,255,0),2,cv2.LINE_AA)
-    
-    frame_to_save = frame.copy()
-    
-    # draw detected text
-    if len(txt) < 3:
-        txt = "(No text detected. Press the button to scan for signs.)"
-    cv2.putText(frame, f'{txt}',(30,100),cv2.FONT_HERSHEY_SIMPLEX,1,(255,255,0),2,cv2.LINE_AA)
-    
-    if SHOW_VIDEO:
-        # All the results have been drawn on the frame, so it's time to display it.
-        cv2.imshow('VIA', frame)
 
     # Calculate framerate
     t2 = cv2.getTickCount()
@@ -370,6 +360,9 @@ while RUN:
     
     # DETECT LARGEST OBJECT
     if pressed_key == ord('d') or pressed_key == ord('D') or SHORT_PRESS:
+        
+        # clear out the text string so that old data isn't written on the screen
+        txt = ''
         
         # capture a new time and date stamp when button is pressed
         # skip this part if we are re-attempting. This will give
@@ -431,34 +424,33 @@ while RUN:
                     # Text to speech with PYTTSX3
                     pyttsx3_functions.text_to_speech(txt)
                     
-                    # reset these variabls
+                    # reset these variables to conclude the scanning process
                     SHORT_PRESS = False
                     RETRY_ATTEMPTS = 0
                                      
         else:
-            if RETRY_ATTEMPTS <= 3:
+            if RETRY_ATTEMPTS < MAX_RETRIES:
                 print("No signs detected. Reattempting...")
                 RETRY_ATTEMPTS += 1
             else:
-                pyttsx3_functions.text_to_speech("Sorry, I don't see any signs. Please scan again.")
+                txt = "Sorry, I don't see any signs. Please scan again."
+                pyttsx3_functions.text_to_speech(txt)
                 # set this flag back to False so that the button can be pressed again.
                 SHORT_PRESS = False
                 RETRY_ATTEMPTS = 0
         
-        
-        
         # draw detected text on the screen
         if len(txt) < 3:
             txt = "(No text detected. Press 'd' to detect text.)"
-        cv2.putText(frame_to_save, f'{txt}',(30,100),cv2.FONT_HERSHEY_SIMPLEX,1,(255,255,0),2,cv2.LINE_AA)
+        cv2.putText(frame, f'{txt}',(30,100),cv2.FONT_HERSHEY_SIMPLEX,1,(255,255,0),2,cv2.LINE_AA)
 
-        # save whole image
-        image = frame_to_save
-        file_path = f'screenshots/{timestampStr}_whole.png'
-        ocr.save_image(image, file_path)
-        
-        if detected_object_list != []:
-                        
+        # save files to memory
+        if detected_object_list != [] or RETRY_ATTEMPTS == MAX_RETRIES:
+            # save whole image
+            file_path = f'screenshots/{timestampStr}_whole.png'
+            ocr.save_image(frame, file_path)
+            
+        if detected_object_list != []:            
             # save the dewarp process image
             image = dewarp_process
             file_path = f'screenshots/{timestampStr}_dewarp_process.png'
@@ -487,11 +479,19 @@ while RUN:
             write_to_text(f'{timestampStr},{len(detected_object_list)},'\
                           f'{obj_width},{obj_height},{obj_area},'\
                           f'{time_elapsed_dewarp},{time_elapsed_ocr},"{txt}"')
+            
     
+    # draw detected text
+    if len(txt) < 3:
+        txt = "(No text detected. Press the button to scan for signs.)"
+    cv2.putText(frame, f'{txt}',(30,100),cv2.FONT_HERSHEY_SIMPLEX,1,(255,255,0),2,cv2.LINE_AA)
+    
+    if SHOW_VIDEO:
+        # All the results have been drawn on the frame, so it's time to display it.
+        cv2.imshow('VIA', frame)
             
     if pressed_key == ord('q') or pressed_key == ord('Q'):
         pyttsx3_functions.text_to_speech("Goodbye. Thank you for using Via!")
-      
             
         # Clean up
         RUN = False
