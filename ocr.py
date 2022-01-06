@@ -261,7 +261,6 @@ def process_and_unwarp(image, test_mode=0, plotting_mode=0):
     """
     
     if plotting_mode:
-      # plot
       plt.imshow(image)
       plt.title('Original Image')
       plt.show()
@@ -279,41 +278,31 @@ def process_and_unwarp(image, test_mode=0, plotting_mode=0):
     cnv, largest_contour = detect_contour(mask, image.shape, plotting_mode=plotting_mode)
     corners, canvas = detect_corners_from_contour(cnv, largest_contour, plotting_mode=plotting_mode)
 
+    ##############################################################################
+    # METHOD 4 FOR PLACING DEWARPED IMAGE IN FRAME
+
+    destination_points = np.float32([(0, 0), (image.shape[1], 0), (0, image.shape[0]), (image.shape[1], image.shape[0])])
+    ##############################################################################
     
-    ##############################################################################
-    # METHOD 2 FOR PLACING DEWARPED IMAGE IN FRAME
-    _, h, w = get_destination_points(corners)
-
-    offset_x = (image.shape[1] - w) / 2
-    offset_y = (image.shape[0] - h)
-
-    destination_points = np.float32([(offset_x, offset_y), (offset_x + w, offset_y), (offset_x, image.shape[0]), (offset_x + w, image.shape[0])])
-    ##############################################################################
-
     try:
-        un_warped = unwarp(image, np.float32(corners), destination_points, plotting_mode=plotting_mode)
+      un_warped = unwarp(image, np.float32(corners), destination_points, plotting_mode=plotting_mode)
 
-        cropped = un_warped[0:h, 0:w]
-        
-        if plotting_mode:
-          # plot
-          f, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 8))
-          # f.subplots_adjust(hspace=.2, wspace=.05)
-          ax1.imshow(un_warped)
-          # ax2.imshow(cropped)
-          plt.show()
+      if plotting_mode:
+        f, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 8))
+        ax1.imshow(un_warped)
 
-        # convert binary mask to RGB so that it can be concatenated with other images
-        mask_rgb = cv2.cvtColor(mask, cv2.COLOR_GRAY2RGB)
+        plt.show()
 
-        # concatenate unwarping images
-        top = cv2.hconcat([image, mask_rgb])
-        bottom = cv2.hconcat([canvas, un_warped])
-        unwarp_process_image = cv2.vconcat([top, bottom])
+      # convert binary mask to RGB so that it can be concatenated with other images
+      mask_rgb = cv2.cvtColor(mask, cv2.COLOR_GRAY2RGB)
+
+      # concatenate unwarping images
+      top = cv2.hconcat([image, mask_rgb])
+      bottom = cv2.hconcat([canvas, un_warped])
+      unwarp_process_image = cv2.vconcat([top, bottom])
     except:
       un_warped = image
       unwarp_process_image = image
-      cv2.putText(unwarp_process_image, "Failed to dewarp.",(30,50),cv2.FONT_HERSHEY_SIMPLEX,1,(0,255,255),2,cv2.LINE_AA)
 
     return un_warped, unwarp_process_image
 

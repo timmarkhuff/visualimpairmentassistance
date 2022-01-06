@@ -331,21 +331,25 @@ while RUN:
             objwidth = xmax - xmin
             objheight = ymax - ymin
             objarea = objwidth * objheight
+            h2wratio = 1.33
             
-                   
-            # draw rectangle
-            cv2.rectangle(frame, (xmin,ymin), (xmax,ymax), (10, 255, 0), 2)
+            if objheight < objwidth or objheight > objwidth * 1.7:
+                # draw red rectangle
+                cv2.rectangle(frame, (xmin,ymin), (xmax,ymax), (0, 10, 255), 2)
+            else:
+                # draw green rectangle
+                cv2.rectangle(frame, (xmin,ymin), (xmax,ymax), (10, 255, 0), 2)
 
-            # Draw label
-            object_name = labels[int(classes[i])] # Look up object name from "labels" array using class index
-            label = '%s: %d%%' % (object_name, int(scores[i]*100)) # Example: 'person: 72%'
-            labelSize, baseLine = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.7, 2) # Get font size
-            label_ymin = max(ymin, labelSize[1] + 10) # Make sure not to draw label too close to top of window
-            cv2.rectangle(frame, (xmin, label_ymin-labelSize[1]-10), (xmin+labelSize[0], label_ymin+baseLine-10), (255, 255, 255), cv2.FILLED) # Draw white box to put label text in
-            cv2.putText(frame, label, (xmin, label_ymin-7), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 0), 2) # Draw label text
+                # Draw label
+                object_name = labels[int(classes[i])] # Look up object name from "labels" array using class index
+                label = '%s: %d%%' % (object_name, int(scores[i]*100)) # Example: 'person: 72%'
+                labelSize, baseLine = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.7, 2) # Get font size
+                label_ymin = max(ymin, labelSize[1] + 10) # Make sure not to draw label too close to top of window
+                cv2.rectangle(frame, (xmin, label_ymin-labelSize[1]-10), (xmin+labelSize[0], label_ymin+baseLine-10), (255, 255, 255), cv2.FILLED) # Draw white box to put label text in
+                cv2.putText(frame, label, (xmin, label_ymin-7), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 0), 2) # Draw label text
 
-            detected_object = [object_name, ymin, xmin, ymax, xmax, objwidth, objheight, objarea]
-            detected_object_list.append(detected_object)
+                detected_object = [object_name, ymin, xmin, ymax, xmax, objwidth, objheight, objarea]
+                detected_object_list.append(detected_object)
             
     # Draw framerate in corner of frame
     cv2.putText(frame,'FPS: {0:.2f}'.format(frame_rate_calc),(30,50),cv2.FONT_HERSHEY_SIMPLEX,1,(255,255,0),2,cv2.LINE_AA)
@@ -403,8 +407,7 @@ while RUN:
                     except:
                         unwarped = cropped_image.copy()
                         unwarp_process_image = cropped_image.copy()
-                        cv2.putText(unwarp_process_image, "Failed to dewarp.",(30,50),cv2.FONT_HERSHEY_SIMPLEX,1,(0,255,255),2,cv2.LINE_AA)
-                        
+                      
                     
                     # calculate time elapsed from button press to dewarp completion
                     dateTimeObjEndDewarp = datetime.utcnow()
