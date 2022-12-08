@@ -4,7 +4,7 @@ import pyrebase
 import os
 
 config = {
-  "apiKey": "AIzaSyA3l-OyTRWphW2L-h3FoByqHEdu3nbxml8",
+  "apiKey": "xxxxxxxxxxxxxxxxxxxxx",
   "authDomain": "visual-impairment-assistance.firebaseapp.com",
   "databaseURL": "https://visual-impairment-assistance-default-rtdb.firebaseio.com",
   "projectId": "visual-impairment-assistance",
